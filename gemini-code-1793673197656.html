@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JaysonChi 棒球聯盟 (JCBL) - 台北大巨蛋官方訂票系統</title>
+    <style>
+        :root {
+            --primary-color: #0d233a;
+            --secondary-color: #1a5b8c;
+            --accent-color: #007bff;
+            --bg-color: #f4f6f9;
+            --card-bg: #ffffff;
+            --text-main: #333333;
+            --text-muted: #666666;
+            --border-color: #e0e0e0;
+            
+            /* 座位區顏色對應大巨蛋圖例 */
+            --color-b1: #1db0f2;   /* 下層看台 102-146區 */
+            --color-l2: #70b82d;   /* 中層看台 202-244區 */
+            --color-l3: #d94ba6;   /* VIP看台 301-317區 */
+            --color-l4: #f28500;   /* 上層看台 401-534區 */
+            --color-home: #e6b800; /* 本壘熱區 112-114區 */
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.5;
+            padding-bottom: 40px;
+        }
+
+        /* 頁首 Header */
+        header {
+            background-color: var(--primary-color);
+            color: #fff;
+            padding: 15px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+
+        .header-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            letter-spacing: 1px;
+        }
+
+        .logo badge {
+            background: #e74c3c;
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+
+        .nav-info {
+            font-size: 0.9rem;
+            color: #ccc;
+        }
+
+        /* 主要內容區 */
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            gap: 20px;
+        }
+
+        @media (max-width: 992px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* 卡片通用樣式 */
+        .card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* 賽事選擇選擇器 */
+        .match-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .match-btn {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            background: #fff;
+            border-radius: 6px;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s;
+        }
+
+        .match-btn.active {
+            border-color: var(--secondary-color);
+            background-color: #eef6fc;
+            box-shadow: 0 0 0 2px rgba(26, 91, 140, 0.2);
+        }
+
+        .match-date {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .match-title {
+            font-weight: bold;
+            font-size: 0.95rem;
+            color: var(--primary-color);
+        }
+
+        /* 大巨蛋圖例導覽 */
+        .legend-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            justify-content: center;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+
+        .legend-item:hover {
+            background: #e9ecef;
+        }
+
+        .legend-color {
+            width: 14px;
+            height: 14px;
+            border-radius: 3px;
+        }
+
+        /* SVG 球場區域 */
+        .map-container {
+            width: 100%;
+            background: #111827;
+            border-radius: 8px;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        svg.stadium-map {
+            width: 100%;
+            max-width: 650px;
+            height: auto;
+        }
+
+        .sector {
+            cursor: pointer;
+            transition: opacity 0.2s, stroke-width 0.2s;
+        }
+
+        .sector:hover {
+            opacity: 0.85;
+            stroke: #fff;
+            stroke-width: 2px;
+        }
+
+        .sector.selected {
+            stroke: #ffeb3b;
+            stroke-width: 3px;
+            filter: drop-shadow(0 0 6px rgba(255, 235, 59, 0.8));
+        }
+
+        /* 座位選擇矩陣 */
+        .seat-matrix-container {
+            margin-top: 20px;
+            display: none;
+        }
+
+        .seat-matrix-container.active {
+            display: block;
+        }
+
+        .screen-field {
+            text-align: center;
+            background: #e9ecef;
+            padding: 6px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .seats-grid {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 6px;
+            max-width: 450px;
+            margin: 0 auto;
+        }
+
+        .seat {
+            aspect-ratio: 1;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.15s;
+        }
+
+        .seat:hover:not(.occupied) {
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+        }
+
+        .seat.selected {
+            background: #28a745;
+            color: #fff;
+            border-color: #28a745;
+        }
+
+        .seat.occupied {
+            background: #e0e0e0;
+            color: #a0a0a0;
+            cursor: not-allowed;
+            border-color: #d0d0d0;
+        }
+
+        /* 側邊欄與結帳明細 */
+        .summary-card {
+            position: sticky;
+            top: 20px;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 0.95rem;
+        }
+
+        .summary-total {
+            border-top: 2px dashed var(--border-color);
+            padding-top: 12px;
+            margin-top: 12px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: #d9534f;
+        }
+
+        .tickets-list {
+            margin: 10px 0;
+            max-height: 120px;
+            overflow-y: auto;
+        }
+
+        .ticket-chip {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            padding: 6px 10px;
+            border-radius: 4px;
+            margin-bottom: 5px;
+            font-size: 0.85rem;
+        }
+
+        .btn-checkout {
+            width: 100%;
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 15px;
+        }
+
+        .btn-checkout:hover {
+            background: #218838;
+        }
+
+        .btn-checkout:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        /* 表單區域 */
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        /* Modal 彈窗 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: #fff;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 480px;
+            padding: 25px;
+            text-align: center;
+            position: relative;
+        }
+
+        .ticket-modal-header {
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .qr-placeholder {
+            width: 150px;
+            height: 150px;
+            background: #eee;
+            margin: 15px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            color: #666;
+            border: 2px dashed #ccc;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 頁首 Header -->
+    <header>
+        <div class="header-container">
+            <div class="logo">
+                ⚾ JCBL <span style="font-size:1rem; font-weight:normal;">JaysonChi 棒球聯盟</span>
+            </div>
+            <div class="nav-info">
+                主場館：台北大巨蛋 (Taipei Dome)
+            </div>
+        </div>
+    </header>
+
+    <!-- 主要區域 -->
+    <div class="container">
+        <!-- 左側：賽事選擇與球場圖 -->
+        <div class="main-content">
+            <!-- 賽事選擇 -->
+            <div class="card">
+                <div class="card-title">1. 選擇比賽賽事</div>
+                <div class="match-selector">
+                    <div class="match-btn active" onclick="selectMatch(this, 'JCBL 年度總冠軍賽 G1', '2026-10-18 (日) 17:05')">
+                        <div class="match-date">2026-10-18 (日) 17:05</div>
+                        <div class="match-title">爪爪象 vs 狂暴獅 (G1)</div>
+                    </div>
+                    <div class="match-btn" onclick="selectMatch(this, 'JCBL 明星對抗賽', '2026-11-05 (六) 17:05')">
+                        <div class="match-date">2026-11-05 (六) 17:05</div>
+                        <div class="match-title">明星紅隊 vs 明星白隊</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 球場分區選擇 -->
+            <div class="card">
+                <div class="card-title">
+                    <span>2. 選擇座位區域（依台北大巨蛋官方格局）</span>
+                    <span id="current-selected-zone" style="font-size: 0.9rem; color: var(--accent-color);">請點擊圖中區域</span>
+                </div>
+
+                <!-- 官方圖例分類 -->
+                <div class="legend-bar">
+                    <div class="legend-item" onclick="highlightZone('home')">
+                        <div class="legend-color" style="background: var(--color-home);"></div> 本壘熱區 (NT$ 1,880)
+                    </div>
+                    <div class="legend-item" onclick="highlightZone('b1')">
+                        <div class="legend-color" style="background: var(--color-b1);"></div> B1 下層看台 (NT$ 1,280)
+                    </div>
+                    <div class="legend-item" onclick="highlightZone('l2')">
+                        <div class="legend-color" style="background: var(--color-l2);"></div> L2 中層看台 (NT$ 980)
+                    </div>
+                    <div class="legend-item" onclick="highlightZone('l3')">
+                        <div class="legend-color" style="background: var(--color-l3);"></div> L3 VIP看台 (NT$ 1,500)
+                    </div>
+                    <div class="legend-item" onclick="highlightZone('l4')">
+                        <div class="legend-color" style="background: var(--color-l4);"></div> L4/L5 上層看台 (NT$ 600)
+                    </div>
+                </div>
+
+                <!-- 依台北大巨蛋方位重繪的 SVG 座位圖 -->
+                <div class="map-container">
+                    <svg class="stadium-map" viewBox="0 0 600 550">
+                        <!-- 方位標籤 -->
+                        <text x="300" y="25" fill="#9ca3af" font-size="12" text-anchor="middle">西（光復南路） | Gate 6, 7</text>
+                        <text x="300" y="540" fill="#9ca3af" font-size="12" text-anchor="middle">東（忠孝東路四段553巷） | Gate 1, 2, 3, 4, 5</text>
+                        <text x="15" y="275" fill="#9ca3af" font-size="12" text-anchor="middle" transform="rotate(-90, 15, 275)">南（忠孝東路四段）</text>
+                        <text x="585" y="275" fill="#9ca3af" font-size="12" text-anchor="middle" transform="rotate(90, 585, 275)">北（菸廠路） | Gate 8, 9</text>
+
+                        <!-- 球場內野草皮與鑽石區 (本壘在下方) -->
+                        <path d="M 300 450 L 180 330 A 170 170 0 0 1 420 330 Z" fill="#1b4d2e" stroke="#2e7d32" stroke-width="2"/>
+                        <path d="M 300 430 L 250 380 L 300 330 L 350 380 Z" fill="#8d5524" />
+                        <circle cx="300" cy="425" r="4" fill="#ffffff" /> <!-- 本壘 -->
+
+                        <!-- L4/L5 上層看台 401-534區 (橘色最外圈) -->
+                        <path class="sector" id="zone-l4" d="M 140 330 A 210 210 0 0 1 460 330 A 240 240 0 0 0 120 330 Z" 
+                              fill="#f28500" onclick="selectZone('L4/L5 上層看台 (401-534區)', 600, 'Gate 1-5 / 忠孝東路', 'zone-l4')"/>
+
+                        <!-- L3 VIP看台 301-317區 (粉紫色) -->
+                        <path class="sector" id="zone-l3" d="M 160 330 A 190 190 0 0 1 440 330 A 205 205 0 0 0 145 330 Z" 
+                              fill="#d94ba6" onclick="selectZone('L3 VIP看台 (301-317區)', 1500, 'Gate 1-3 VIP專屬', 'zone-l3')"/>
+
+                        <!-- L2 中層看台 202-244區 (綠色) -->
+                        <path class="sector" id="zone-l2" d="M 180 330 A 170 170 0 0 1 420 330 A 185 185 0 0 0 165 330 Z" 
+                              fill="#70b82d" onclick="selectZone('L2 中層看台 (202-244區)', 980, 'Gate 2,3,4', 'zone-l2')"/>
+
+                        <!-- B1 下層看台 102-146區 (藍色) -->
+                        <path class="sector" id="zone-b1" d="M 200 330 A 140 140 0 0 1 400 330 A 165 165 0 0 0 185 330 Z" 
+                              fill="#1db0f2" onclick="selectZone('B1 下層看台 (102-146區)', 1280, 'Gate 1-4', 'zone-b1')"/>
+
+                        <!-- 本壘熱區 112-114區 (黃色三角形/本壘後方) -->
+                        <path class="sector" id="zone-home" d="M 260 410 L 300 480 L 340 410 Q 300 425 260 410 Z" 
+                              fill="#e6b800" onclick="selectZone('本壘熱區 (112-114區)', 1880, 'Gate 1 / 本壘大廳', 'zone-home')"/>
+
+                        <!-- 區域文字標籤 -->
+                        <text x="300" y="115" fill="#ffffff" font-size="12" font-weight="bold" text-anchor="middle" pointer-events="none">L4/L5 上層看台 401-534區</text>
+                        <text x="300" y="142" fill="#ffffff" font-size="11" font-weight="bold" text-anchor="middle" pointer-events="none">L3 VIP看台 301-317區</text>
+                        <text x="300" y="170" fill="#ffffff" font-size="11" font-weight="bold" text-anchor="middle" pointer-events="none">L2 中層看台 202-244區</text>
+                        <text x="300" y="210" fill="#ffffff" font-size="12" font-weight="bold" text-anchor="middle" pointer-events="none">B1 下層看台 102-146區</text>
+                        <text x="300" y="455" fill="#111111" font-size="11" font-weight="bold" text-anchor="middle" pointer-events="none">本壘熱區 112-114</text>
+                    </svg>
+                </div>
+
+                <!-- 動態座位選擇矩陣 -->
+                <div class="seat-matrix-container" id="seat-matrix">
+                    <div class="screen-field" id="matrix-title">請選擇座位 (最多 4 張)</div>
+                    <div class="seats-grid" id="seats-grid"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右側：訂單明細與購票資訊 -->
+        <div class="sidebar">
+            <div class="card summary-card">
+                <div class="card-title">購票明細</div>
+                
+                <div class="summary-item">
+                    <span style="color:var(--text-muted);">賽事：</span>
+                    <span id="summary-match" style="font-weight:bold; font-size:0.85rem;">爪爪象 vs 狂暴獅 (G1)</span>
+                </div>
+                <div class="summary-item">
+                    <span style="color:var(--text-muted);">區域：</span>
+                    <span id="summary-zone" style="font-weight:bold;">尚未選擇</span>
+                </div>
+                
+                <div style="margin-top: 10px; font-size: 0.85rem; color: var(--text-muted);">已選座位：</div>
+                <div class="tickets-list" id="tickets-list">
+                    <div style="color: #999; font-size: 0.85rem; text-align: center; padding: 10px 0;">請在左側點選座位</div>
+                </div>
+
+                <div class="summary-item summary-total">
+                    <span>總計金額：</span>
+                    <span id="summary-price">NT$ 0</span>
+                </div>
+
+                <!-- 訂購人資訊 -->
+                <div style="margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px;">
+                    <div class="form-group">
+                        <label>姓名</label>
+                        <input type="text" id="cust-name" placeholder="請輸入聯絡人姓名" value="陳小明">
+                    </div>
+                    <div class="form-group">
+                        <label>手機號碼</label>
+                        <input type="tel" id="cust-phone" placeholder="0912345678" value="0912345678">
+                    </div>
+                    <div class="form-group">
+                        <label>付款方式</label>
+                        <select id="payment-method">
+                            <option>信用卡即時刷卡</option>
+                            <option>LINE Pay / 街口支付</option>
+                            <option>超商代碼繳費</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button class="btn-checkout" id="checkout-btn" onclick="processCheckout()" disabled>確認立即訂購</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 電子門票 Modal 彈窗 -->
+    <div class="modal" id="ticket-modal">
+        <div class="modal-content">
+            <div class="ticket-modal-header">
+                <h3 style="color:var(--primary-color);">🎉 訂票成功！</h3>
+                <p style="font-size: 0.85rem; color: #666;">JaysonChi 棒球聯盟 (JCBL) 電子入場憑證</p>
+            </div>
+            <div style="text-align: left; background: #f8f9fa; padding: 12px; border-radius: 6px; font-size: 0.9rem; margin-bottom: 10px;">
+                <p><strong>比賽賽事：</strong><span id="modal-match"></span></p>
+                <p><strong>時間：</strong><span id="modal-date"></span></p>
+                <p><strong>場地：</strong>台北大巨蛋 (Taipei Dome)</p>
+                <p><strong>建議入口：</strong><span id="modal-gate" style="color:#d9534f; font-weight:bold;"></span></p>
+                <p><strong>座位資訊：</strong><span id="modal-seats"></span></p>
+                <p><strong>訂購人：</strong><span id="modal-name"></span></p>
+            </div>
+            <div class="qr-placeholder">
+                [ 電子門票 QR Code ]
+            </div>
+            <button class="btn-checkout" onclick="closeModal()">關閉並儲存票券</button>
+        </div>
+    </div>
+
+    <script>
+        // 狀態管理
+        let currentMatch = "JCBL 年度總冠軍賽 G1";
+        let currentMatchDate = "2026-10-18 (日) 17:05";
+        let selectedZone = null;
+        let selectedPrice = 0;
+        let selectedGate = "";
+        let selectedSeats = [];
+
+        // 選擇比賽
+        function selectMatch(element, matchName, matchDate) {
+            document.querySelectorAll('.match-btn').forEach(btn => btn.classList.remove('active'));
+            element.classList.add('active');
+            currentMatch = matchName;
+            currentMatchDate = matchDate;
+            document.getElementById('summary-match').innerText = matchName;
+        }
+
+        // 高亮並觸發區域選擇
+        function highlightZone(zoneId) {
+            const el = document.getElementById(`zone-${zoneId}`);
+            if (el) el.click();
+        }
+
+        // 選擇球場區域
+        function selectZone(zoneName, price, gateInfo, elementId) {
+            // 清除 SVG 選擇狀態
+            document.querySelectorAll('.sector').forEach(s => s.classList.remove('selected'));
+            document.getElementById(elementId).classList.add('selected');
+
+            selectedZone = zoneName;
+            selectedPrice = price;
+            selectedGate = gateInfo;
+            selectedSeats = []; // 切換區域時清空座位
+
+            document.getElementById('current-selected-zone').innerText = `已選擇: ${zoneName}`;
+            document.getElementById('summary-zone').innerText = zoneName;
+
+            // 渲染座位矩陣
+            renderSeatMatrix(zoneName);
+            updateSummary();
+        }
+
+        // 產生座位矩陣 (示範用 30 個座位)
+        function renderSeatMatrix(zoneName) {
+            const matrixContainer = document.getElementById('seat-matrix');
+            const grid = document.getElementById('seats-grid');
+            const title = document.getElementById('matrix-title');
+
+            title.innerText = `${zoneName} - 請選擇座位 (單筆限4張)`;
+            grid.innerHTML = '';
+            matrixContainer.classList.add('active');
+
+            // 隨機設置一些已售出座位
+            for (let i = 1; i <= 30; i++) {
+                const seat = document.createElement('div');
+                const row = Math.ceil(i / 10);
+                const seatNo = (i % 10) === 0 ? 10 : (i % 10);
+                const isOccupied = (i % 7 === 0 || i % 11 === 0);
+
+                seat.className = `seat ${isOccupied ? 'occupied' : ''}`;
+                seat.innerText = `${row}排${seatNo}`;
+
+                if (!isOccupied) {
+                    seat.onclick = () => toggleSeat(seat, `${row}排${seatNo}`);
+                }
+
+                grid.appendChild(seat);
+            }
+        }
+
+        // 切換座位選擇狀態
+        function toggleSeat(seatElement, seatLabel) {
+            if (seatElement.classList.contains('selected')) {
+                seatElement.classList.remove('selected');
+                selectedSeats = selectedSeats.filter(s => s !== seatLabel);
+            } else {
+                if (selectedSeats.length >= 4) {
+                    alert('每筆交易最多選擇 4 個座位');
+                    return;
+                }
+                seatElement.classList.add('selected');
+                selectedSeats.push(seatLabel);
+            }
+            updateSummary();
+        }
+
+        // 更新結帳明細與按鈕
+        function updateSummary() {
+            const listEl = document.getElementById('tickets-list');
+            const priceEl = document.getElementById('summary-price');
+            const btn = document.getElementById('checkout-btn');
+
+            if (selectedSeats.length === 0) {
+                listEl.innerHTML = `<div style="color: #999; font-size: 0.85rem; text-align: center; padding: 10px 0;">請在左側點選座位</div>`;
+                priceEl.innerText = `NT$ 0`;
+                btn.disabled = true;
+                return;
+            }
+
+            listEl.innerHTML = selectedSeats.map(seat => `
+                <div class="ticket-chip">
+                    <span>${selectedZone} - ${seat}</span>
+                    <span style="font-weight:bold;">NT$ ${selectedPrice}</span>
+                </div>
+            `).join('');
+
+            const totalPrice = selectedSeats.length * selectedPrice;
+            priceEl.innerText = `NT$ ${totalPrice.toLocaleString()}`;
+            btn.disabled = false;
+        }
+
+        // 結帳處理
+        function processCheckout() {
+            const name = document.getElementById('cust-name').value.trim();
+            const phone = document.getElementById('cust-phone').value.trim();
+
+            if (!name || !phone) {
+                alert('請完整填寫購票人姓名與手機號碼');
+                return;
+            }
+
+            // 填充 Modal 資訊
+            document.getElementById('modal-match').innerText = currentMatch;
+            document.getElementById('modal-date').innerText = currentMatchDate;
+            document.getElementById('modal-gate').innerText = selectedGate;
+            document.getElementById('modal-seats').innerText = `${selectedZone} ${selectedSeats.join(', ')}`;
+            document.getElementById('modal-name').innerText = `${name} (${phone})`;
+
+            // 顯示 Modal
+            document.getElementById('ticket-modal').style.display = 'flex';
+        }
+
+        // 關閉 Modal
+        function closeModal() {
+            document.getElementById('ticket-modal').style.display = 'none';
+            alert('感謝您的購買！電子票券已發送至您的手機簡訊。');
+            location.reload();
+        }
+    </script>
+</body>
+</html>
